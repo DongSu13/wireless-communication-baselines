@@ -4,8 +4,6 @@
 
 A wireless communication model collection for RGB, GPS trajectory, CSI and beam prediction, plus independently usable hierarchical components. Contents are core algorithms, generic Ridge regression, model inference interfaces and synthetic tests. Original works and local adaptations are documented for learning and reproduction exercises.
 
-This review version remains private and has not been published.
-
 ## Contents and usage
 
 - [paper_baselines.py](paper_baselines.py): 14 task methods returning `BaselineOutput`.
