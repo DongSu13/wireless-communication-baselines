@@ -1,0 +1,5 @@
+-r requirements.txt
+h5py>=3.8
+timm>=0.9
+einops>=0.6
+scipy>=1.10

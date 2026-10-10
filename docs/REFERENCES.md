@@ -1,0 +1,39 @@
+# 方法引用与实现范围 / References and implementation scope
+
+[项目介绍 / Collection](../README.md) · [WiFo 专项说明](WIFO.md)
+
+以下列出本地 baseline 的 20 项方法与组件。每条引用注明实际关联：算法基础、架构背景或任务适配。引用不表示采用了原作者源码或完整复现其架构。 / These 20 baseline methods/components are local task adaptations; references indicate algorithmic or architectural background, not copied official implementations or full reproduction.
+
+
+方法根据相关任务和算法构建。本表逐项提供论文或 GitHub 引用及实际实现。部分历史 ID 与参考架构不同：例如 `convlstm`/`predrnn_style`/`strictsimvp_style` 使用 2D CNN，`convgru`/`temporal3d` 使用 MLP。任务适配不等于原论文完整复现。
+
+| Model / method | Task | Actual implementation | Paper / GitHub | Relation |
+|---|---|---|---|---|
+| [`convlstm`](../paper_baselines.py) | RGB prediction | 1 hidden 2D CNN block; history folded into channels; no recurrent cell / 单层 CNN | [Convolutional LSTM Network: A Machine Learning Approach for Precipitation Nowcasting](https://arxiv.org/abs/1506.04214) | architecture context only; local proxy, not ConvLSTM |
+| [`predrnn_style`](../paper_baselines.py) | RGB prediction | 2 hidden 2D CNN blocks; no recurrence/memory / 双层 CNN | [PredRNN official repository and paper citations](https://github.com/thuml/predrnn-pytorch) | architecture context only; local proxy, not PredRNN |
+| [`strictsimvp_style`](../paper_baselines.py) | RGB prediction | 3 hidden 2D CNN blocks; no SimVP encoder/translator/decoder / 三层 CNN | [SimVP: Simpler yet Better Video Prediction](https://arxiv.org/abs/2206.05099) | architecture context only; local proxy, not strict SimVP reproduction |
+| [`gru`](../paper_baselines.py) | GPS trajectory | torch.nn.GRU(2,64) plus future trajectory linear head / 标准 GRU + 线性头 | [Learning Phrase Representations using RNN Encoder–Decoder for Statistical Machine Translation](https://arxiv.org/abs/1406.1078) | standard recurrent primitive adapted to local GPS task |
+| [`lstm`](../paper_baselines.py) | GPS trajectory | torch.nn.LSTM(2,64) plus future trajectory linear head / 标准 LSTM + 线性头 | [Long Short-Term Memory](https://doi.org/10.1162/neco.1997.9.8.1735) | standard recurrent primitive adapted to local GPS task |
+| [`tcn`](../paper_baselines.py) | GPS trajectory | 2 Conv1d blocks, symmetric padding and mean pooling / 非因果、无膨胀卷积 | [An Empirical Evaluation of Generic Convolutional and Recurrent Networks for Sequence Modeling](https://arxiv.org/abs/1803.01271) | architecture context only; local temporal CNN, not published causal dilated TCN |
+| [`wayformer_style`](../paper_baselines.py) | GPS trajectory | GPS-only projection/time embedding, 2-layer Transformer encoder, linear future head | [Wayformer: Motion Forecasting via Simple & Efficient Attention Networks](https://arxiv.org/abs/2207.05844)<br>[Attention Is All You Need](https://arxiv.org/abs/1706.03762) | local Transformer task adapter; no Wayformer map/agent multimodal architecture |
+| [`convgru`](../paper_baselines.py) | Fine CSI prediction | 1 hidden dense layer on flattened CSI history / 单层 MLP，无卷积/GRU | [Delving Deeper into Convolutional Networks for Learning Video Representations](https://arxiv.org/abs/1511.06432) | architecture context only; local MLP proxy, not ConvGRU |
+| [`temporal3d`](../paper_baselines.py) | Fine CSI prediction | 2 hidden dense layers on flattened CSI history / 双层 MLP，无 3D 卷积 | [Learning Spatiotemporal Features with 3D Convolutional Networks](https://arxiv.org/abs/1412.0767) | C3D is background only; original specific upstream untraced |
+| [`channeltransformer10_style`](../paper_baselines.py) | Fine CSI prediction | CSI projection/time embedding, 2 generic Transformer encoder layers, future linear head | [Attention Is All You Need](https://arxiv.org/abs/1706.03762) | generic Transformer algorithm reference; exact ChannelTransformer10 upstream unresolved / 具体来源待确认 |
+| [`gmu`](../paper_baselines.py) | Beam classification | RGB/CSI/GPS linear encoders, 3-way softmax gate, weighted fusion and beam head | [Gated Multimodal Units for Information Fusion](https://arxiv.org/abs/1702.01992) | local gated fusion adaptation, not exact original GMU equation |
+| [`crossattn`](../paper_baselines.py) | Beam classification | GPS query cross-attends to RGB/CSI tokens, then beam head | [Attention Is All You Need](https://arxiv.org/abs/1706.03762) | attention primitive adapted to local beam task |
+| [`decisionfusion`](../paper_baselines.py) | Beam classification | Average of RGB/CSI/GPS logits; identical logits repeated for each future step | [Multimodal Machine Learning: A Survey and Taxonomy](https://arxiv.org/abs/1705.09406) | local late fusion baseline; survey is background only |
+| [`rgb_csi_mmbp_style`](../paper_baselines.py) | Beam classification | RGB/CSI flattened linear encoders, feature concatenation, 2-layer beam MLP | [Multimodal Machine Learning: A Survey and Taxonomy](https://arxiv.org/abs/1705.09406) | local beam adapter; exact MM-BP upstream unresolved / 具体来源待确认; survey is background only |
+| [`csi_rgb_ridge`](../ridge_baseline.py) | CSI/pose → RGB features | Generic scikit-learn Ridge with disjoint groups and train-only standardization | [scikit-learn Ridge implementation](https://github.com/scikit-learn/scikit-learn/blob/main/sklearn/linear_model/_ridge.py)<br>[Scikit-learn: Machine Learning in Python](https://jmlr.org/papers/v12/pedregosa11a.html) | Library attribution; generic feature regression, no dataset-specific experiment claimed |
+| [`CoarseWorldModel`](../model.py) | Multimodal state/condition prediction | Custom causal RGB-latent/CSI-stat/GPS Transformer including CSIStatEncoder | [Attention Is All You Need](https://arxiv.org/abs/1706.03762)<br>[Vista: A Generalizable Driving World Model with High Fidelity and Versatile Controllability](https://github.com/OpenDriveLab/Vista) | Transformer algorithm reference; Vista is task background only, not traced official code |
+| [`LatentDiffusion`](../model.py) | Conditional latent prediction | Local U-Net/attention, DDPM noise objective and deterministic DDIM-like sampling | [High-Resolution Image Synthesis with Latent Diffusion Models](https://arxiv.org/abs/2112.10752)<br>[Denoising Diffusion Probabilistic Models](https://arxiv.org/abs/2006.11239)<br>[Denoising Diffusion Implicit Models](https://arxiv.org/abs/2010.02502) | architecture/algorithm context; not official LDM architecture/weights reproduction |
+| [`FineCSIHead`](../model.py) | Future CSI decoding | Local patched CSI memory and learned future-query Transformer decoder | [Attention Is All You Need](https://arxiv.org/abs/1706.03762) | Transformer primitive reference; not attributed to WiFo or a specific channel paper |
+| [`BeamHead`](../model.py) | Beam classification | Local LayerNorm + linear classifier on CSI-stat state | [Multimodal Machine Learning: A Survey and Taxonomy](https://arxiv.org/abs/1705.09406) | own-source GitHub is provenance; survey is task background only |
+| [`AutoencoderKL`](../vae.py) | RGB latent encoding/decoding | Local f4 convolutional Gaussian KL autoencoder with residual blocks and attention | [Auto-Encoding Variational Bayes](https://arxiv.org/abs/1312.6114)<br>[High-Resolution Image Synthesis with Latent Diffusion Models](https://arxiv.org/abs/2112.10752) | VAE/LDM architecture context; not official pretrained Stable Diffusion autoencoder |
+
+`ChannelTransformer10` 与 `MM-BP` 的特定上游尚未确认，相应引用仅为通用算法背景。支持模型为本地实现；合成测试只验证代码行为，不证明论文精度、训练效果或真实数据泛化。
+
+## WiFo
+
+Boxun Liu, Shijian Gao, Xuanyu Liu, Xiang Cheng, Liuqing Yang. **WiFo: Wireless Foundation Model for Channel Prediction.** SCIENCE CHINA Information Sciences, 68, 162302 (2025). [DOI](https://doi.org/10.1007/s11432-025-4349-0) · [官方 GitHub / Official source](https://github.com/PKU-PCNI/WiFo).
+
+本集合的 [WiFo 入口](../wifo_inference.py)是独立的资源加载与小样本推理适配代码，模型架构由使用者另行获取的官方源码提供。详细范围和官方 BibTeX 见 [WiFo 说明](WIFO.md)。 / The local adapter handles assets and a small inference check; the architecture comes from a separately supplied official checkout.
